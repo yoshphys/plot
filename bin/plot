@@ -1,0 +1,303 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+
+# import time
+
+import math
+import array
+
+import argparse
+import ROOT
+
+
+#__________________________________________________
+
+
+DLM_CHARS = None
+CMT_CHARS = "#"
+
+
+#__________________________________________________
+
+
+class myArgParser:
+
+
+    __args = {"path":   None,
+              "xcol":   1,
+              "xerr":   None,
+              "xmin":   None,
+              "xmax":   None,
+              "ycol":   2,
+              "yerr":   None,
+              "ymin":   None,
+              "ymax":   None,
+              "marker": 21,
+              "dopt":   "p",
+              "dlm":    DLM_CHARS,
+              "cmt":    CMT_CHARS}
+
+    __parser = None
+
+    __description='''
+    A python script to draw a two-dimensional plot in a file
+    '''
+    __epilog='''
+    This is test epilog.
+    '''
+
+    __optConf = {
+            "xcol": {"flag": ["-x", "--xcol"],
+                      "type": int,
+                      "help": "target column number for x-axis",
+                      "metavar": "Xcol"},
+            "xerr": {"flag": ["--xerr"],
+                      "type": int,
+                      "help": "target column number for error of x",
+                      "metavar": "XError"},
+            "xmax": {"flag": ["--xmax"],
+                      "type": str,
+                      "help": "maximum value for x-axis (must be string expression)",
+                      "metavar": "XMax"},
+            "xmin": {"flag": ["--xmin"],
+                      "type": str,
+                      "help": "minimum value for x-axis (must be string expression)",
+                      "metavar": "XMin"},
+            "ycol": {"flag": ["-y", "--ycol"],
+                      "type": int,
+                      "help": "target column number for y-axis",
+                      "metavar": "Ycol"},
+            "yerr": {"flag": ["--yerr"],
+                      "type": int,
+                      "help": "target column number for error of y",
+                      "metavar": "YError"},
+            "ymax": {"flag": ["--ymax"],
+                      "type": str,
+                      "help": "maximum value for y-ayis (must be string expression)",
+                      "metavar": "YMax"},
+            "ymin": {"flag": ["--ymin"],
+                      "type": str,
+                      "help": "minimum value for y-ayis (must be string expression)",
+                      "metavar": "YMin"},
+            "marker": {"flag": ["-m", "--marker"],
+                       "type": int,
+                       "help": "marker style that meets to ROOT",
+                       "metavar": "Marker"},
+            "dopt": {"flag": ["--dopt"],
+                     "type": str,
+                     "help": "draw options that meets to ROOT. e.g. \'l\': draw line between points",
+                     "metavar": "Option"},
+            "dlm":   {"flag": ["--dlm"],
+                      "type": str,
+                      "help": "data delimiter used in data file",
+                      "metavar": "DlmChars"},
+            "cmt":   {"flag": ["--cmt"],
+                      "type": str,
+                      "help": "comment delimiter used in data file",
+                      "metavar": "CmtChars"}
+            }
+
+
+    def __init__(self):
+        self.__parser = argparse.ArgumentParser(description=self.__description, epilog=self.__epilog)
+
+        self.__parser.add_argument("path", type=str)
+        for val in self.__optConf.values():
+            self.__parser.add_argument(*(val["flag"]), type=val["type"], help=val["help"], metavar=val["metavar"])
+
+
+    def __assignOptArg(self, refCont, key):
+        if key in refCont.keys() and key in self.__args.keys():
+            if refCont[key] is not None:
+                self.__args[key] = refCont[key]
+        return
+
+
+    def __assignStrOptArgToFloat(self, refCont, key):
+        if key in refCont.keys() and key in self.__args.keys():
+            if refCont[key] is not None:
+                refVal = refCont[key]
+                try:
+                    self.__args[key] = float(refVal)
+                except (ValueError, TypeError):
+                    msg = f"argument of the flag \'{self.__optConf[key]['flag'][0]}\' must be convertable to float: \'{refVal}\'"
+                    self.__parser.error(msg)
+        return
+
+    def parse(self):
+        if None is self.__parser: return
+        refCont = vars(self.__parser.parse_args())
+        self.__assignOptArg(refCont, "path")
+        self.__assignOptArg(refCont, "xcol")
+        self.__assignOptArg(refCont, "xerr")
+        self.__assignStrOptArgToFloat(refCont, "xmin")
+        self.__assignStrOptArgToFloat(refCont, "xmax")
+        self.__assignOptArg(refCont, "ycol")
+        self.__assignOptArg(refCont, "yerr")
+        self.__assignStrOptArgToFloat(refCont, "ymin")
+        self.__assignStrOptArgToFloat(refCont, "ymax")
+        self.__assignOptArg(refCont, "marker")
+        self.__assignOptArg(refCont, "dopt")
+        self.__assignOptArg(refCont, "dlm")
+        self.__assignOptArg(refCont, "cmt")
+        return
+
+    def dump(self):
+        buff = ""
+        for key, val in self.__args.items():
+            buff += f"{key:>8}: {val}\n"
+        sys.stdout.write(buff)
+        return
+
+    def getArg(self, key):
+        val = None
+        if key in self.__args.keys():
+            val = self.__args[key]
+        return val
+
+    def getPath(self):
+        return self.getArg("path")
+        
+    def getXCol(self):
+        return self.getArg("xcol")
+
+    def getXErrorCol(self):
+        return self.getArg("xerr")
+
+    def getXRange(self):
+        return self.getArg("xmin"), self.getArg("xmax")
+
+    def getYCol(self):
+        return self.getArg("ycol")
+
+    def getYErrorCol(self):
+        return self.getArg("yerr")
+
+    def getYRange(self):
+        return self.getArg("ymin"), self.getArg("ymax")
+
+    def getMarkerStyle(self):
+        return self.getArg("marker")
+
+    def getDrawOption(self):
+        return self.getArg("dopt")
+
+    def getDlmChars(self):
+        return self.getArg("dlm")
+
+    def getCmtChars(self):
+        return self.getArg("cmt")
+
+
+#__________________________________________________
+
+
+def makeGraph(path, xcol, xerr, ycol, yerr):
+
+    xmaxval = -math.inf
+    xminval = math.inf
+    ymaxval = -math.inf
+    yminval = math.inf
+    xcont  = list()
+    ycont  = list()
+    excont = list()
+    eycont = list()
+
+    cols = [xcol, ycol]
+    if xerr is not None: cols.append(xerr)
+    if yerr is not None: cols.append(yerr)
+    maxcol = max(cols)
+
+    i = 0
+    g = ROOT.TGraphErrors()
+    with open(path, 'r') as f:
+        for line in f:
+            words = [e.strip() for e in line.split(CMT_CHARS)[0].split(DLM_CHARS)]
+            if 0 < maxcol - len(words): continue
+            try:
+                x = float(words[xcol - 1])
+                y = float(words[ycol - 1])
+                ex = 0.
+                ey = 0.
+                if xerr is not None: ex = float(words[xerr - 1])
+                if yerr is not None: ey = float(words[yerr - 1])
+            except (ValueError, TypeError):
+                continue
+            g.SetPoint(i, x, y)
+            g.SetPointError(i, ex, ey)
+            i += 1
+
+    return g
+
+
+#__________________________________________________
+
+
+def main():
+    parser = myArgParser()
+    parser.parse()
+    # parser.dump()
+
+    global DLM_CHARS
+    DLM_CHARS = parser.getDlmChars()
+    global CMT_CHARS
+    CMT_CHARS = parser.getCmtChars()
+
+    path = parser.getPath()
+    if not os.path.isfile(path):
+        sys.stderr.write("ERROR: no such file: " + path + "\n")
+        return 1
+
+    xcol = parser.getXCol()
+    xerr = parser.getXErrorCol()
+    xmin, xmax = parser.getXRange()
+
+    ycol  = parser.getYCol()
+    yerr = parser.getYErrorCol()
+    ymin, ymax = parser.getYRange()
+
+    marker = parser.getMarkerStyle()
+    opt = "a" + parser.getDrawOption()
+
+    g = makeGraph(path, xcol, xerr, ycol, yerr)
+    if 0 == g.GetN():
+        sys.stderr.write("WARNING: no entries\n")
+        return 0
+
+    c = ROOT.TCanvas("c", "c")
+
+    g.SetMarkerStyle(marker)
+    g.Draw(opt)
+    # time.sleep(2)
+
+    if ymin is not None:
+        g.SetMinimum(ymin)
+    if ymax is not None:
+        g.SetMaximum(ymax)
+    if xmin is not None or xmax is not None:
+        if xmin is None:
+            xmin = c.GetUxmin()
+        if xmax is None:
+            xmax = c.GetUxmax()
+        g.GetXaxis().SetLimits(xmin, xmax)
+
+    g.Draw(opt)
+    c.Update()
+
+    sys.stdout.write("Press Ctrl-C on the canvas to exit.\n")
+    while True:
+        try:
+            if None == c.WaitPrimitive(): break
+        except KeyboardInterrupt:
+            break
+
+    return 0
+
+
+#__________________________________________________
+
+
+if __name__ == "__main__":
+    main()
