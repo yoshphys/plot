@@ -1,45 +1,52 @@
 # plot
- A program to draw a 2D-graph from data in a text file
 
-## Overview
+This Python script generates a scatter plot using the [ROOT](https://root.cern) library. The script reads input data from a file and plots the specified columns as x and y axes, with optional error bars. The resulting plot can be customized with various options, such as axis ranges, marker style, and draw options.
 
- `plot` is a script to draw a 2D-graph from data in a text file.
- [ROOT](https://root.cern.ch) is used to show graph.
+## Dependencies
 
+- Python 3
+- [ROOT](https://root.cern) library for Python
 
-## Requirement
- - python (> 3.9.9)
- - [ROOT](https://root.cern.ch) (> 6.24/06)
-
+To install the ROOT library, please follow the instructions on the official ROOT website.
 
 ## Usage
- To draw a graph from following file (`data.txt`),
 
- > <pre>-2.000000     1.928324</pre>  
- > <pre>-1.555556     1.420616</pre>  
- > <pre>-1.111111     0.117099</pre>  
- > <pre>-0.666667    -1.659129</pre>  
- > <pre>-0.222222    -2.417249</pre>  
- > <pre> 0.222222    -0.622328</pre>  
- > <pre> 0.666667     1.277349</pre>  
- > <pre> 1.111111    -0.099972</pre>  
- > <pre> 1.555556     2.102559</pre>  
- > <pre> 2.000000     2.493924</pre>  
+```sh
+python3 -i plot [options] data_file
+```
 
- you may just run the following command.
+## Options
 
- ```
- $ plot data.txt
- ```
+- `-x`, `--xcol`: Target column number for x-axis (default: 1)
+- `--xerr`: Target column number for error of x (optional)
+- `--xmin`: Minimum value for x-axis (must be string expression, optional)
+- `--xmax`: Maximum value for x-axis (must be string expression, optional)
+- `-y`, `--ycol`: Target column number for y-axis (default: 2)
+- `--yerr`: Target column number for error of y (optional)
+- `--ymin`: Minimum value for y-axis (must be string expression, optional)
+- `--ymax`: Maximum value for y-axis (must be string expression, optional)
+- `-m`, `--marker`: Marker style that meets ROOT (default: 21)
+- `--dopt`: Draw options that meet ROOT (e.g. 'l': draw line between points, default: 'p')
+- `--dlm`: Data delimiter used in the data file (default: None)
+- `--cmt`: Comment delimiter used in the data file (default: '#')
 
- In the case you want to draw a graph with data in column-2 along x-axis and those in column-1 along y-axis, run the following command.
+## Example
 
- ```
- $ plot data.txt --xcol 2 --ycol 1
- ```
+Assuming the input data file `data.txt` contains the following data:
+```data.txt
+# x y ex  ey
+  0 0 0.1 0.1
+  1 2 0.1 0.1
+  2 4 0.1 0.1
+  3 6 0.1 0.1
+```
 
- You can also specify the column for each error, the ranges of each axis, delimiter used in data file, and comment delimiter used in data file.
- 
+You can create a scatter plot with the following command:
+```sh
+python3 -i plot --xcol 1 --ycol 2 --xerr 3 --yerr 4 data.txt
+```
+
+This will create a scatter plot with error bars, where the x-axis values are in column 1, y-axis values are in column 2, x error values are in column 3, and y error values are in column 4.
 
 <!--
 ## Features
