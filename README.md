@@ -1,5 +1,8 @@
 # plot
 
+> **This repository is archived and no longer maintained.**
+> T *he successor project is [easy-graph](https://github.com/yoshphys/easy-graph).
+
 This Python script generates a scatter plot using the [ROOT](https://root.cern) library. The script reads input data from a file and plots the specified columns as x and y axes, with optional error bars. The resulting plot can be customized with various options, such as axis ranges, marker style, and draw options.
 
 ## Dependencies
